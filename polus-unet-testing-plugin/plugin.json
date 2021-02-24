@@ -1,0 +1,67 @@
+{
+    "name": "UNet Testing",
+    "version": "0.1.1",
+    "title": "UNet Testing",
+    "description": "WIPP plugin to test UNet model from UFreiburg",
+    "author": "Vishakha Goyal (vishakha.goyal@nih.gov)",
+    "institution": "National Center for Advancing Translational Sciences, National Institutes of Health",
+    "repository": "https://github.com/labshare/polus-plugins",
+    "website": "https://ncats.nih.gov/preclinical/core/informatics",
+    "citation": "",
+    "containerId": "labshare/polus-unet-testing-plugin:0.1.1",
+    "inputs": [
+      {
+        "name": "filename",
+        "type": "string",
+        "description": "Weights file for testing.",
+        "required": true
+      },
+      {
+        "name": "input_directory",
+        "type": "collection",
+        "description": "Input image collection to be processed by this plugin.",
+        "required": true
+      },
+      {
+        "name": "pixelsize",
+        "type": "number",
+        "description": "Input image pixel size.",
+        "required": true
+      },
+      {
+        "name": "weights",
+        "type": "generic data collection",
+        "description": "Weights path for testing.",
+        "required": true
+      }
+    ],
+    "outputs": [
+      {
+        "name": "output_directory",
+        "type": "collection",
+        "description": "Output collection"
+      }
+    ],
+    "ui": [
+      {
+        "key": "inputs.filename",
+        "title": "weight file name",
+        "description": "Weights file for testing."
+      },
+      {
+        "key": "inputs.input_directory",
+        "title": "Input collection",
+        "description": "Input image collection to be processed by this plugin."
+      },
+      {
+        "key": "inputs.pixelsize",
+        "title": "Pixel Size",
+        "description": "Input image pixel size."
+      },
+      {
+        "key": "inputs.weights",
+        "title": "weight collection",
+        "description": "Weights path for testing."
+      }
+    ]
+  }
