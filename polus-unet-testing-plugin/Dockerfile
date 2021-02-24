@@ -15,7 +15,6 @@ WORKDIR ${EXEC_DIR}
 
 RUN pip3 install -r ${EXEC_DIR}/requirements.txt --no-cache-dir
 
-# install CUDA and cuDNN
 RUN apt-get update
 RUN apt-get install -y software-properties-common && \
     apt-get install -y gnupg && \
