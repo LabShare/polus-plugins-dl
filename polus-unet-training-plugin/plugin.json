@@ -1,0 +1,100 @@
+{
+    "name": "UNet Training",
+    "version": "0.1.1",
+    "title": "UNet Training",
+    "description": "WIPP plugin to train UNet model from UFreiburg",
+    "author": "Vishakha Goyal (vishakha.goyal@nih.gov)",
+    "institution": "National Center for Advancing Translational Sciences, National Institutes of Health",
+    "repository": "https://github.com/labshare/polus-plugins",
+    "website": "https://ncats.nih.gov/preclinical/core/informatics",
+    "citation": "",
+    "containerId": "labshare/polus-unet-training-plugin:0.1.1",
+    "inputs": [
+      {
+        "name": "borderWeightFactor",
+        "type": "number",
+        "description": "lambda separation",
+        "required": false
+      },
+      {
+        "name": "borderWeightSigmaPx",
+        "type": "number",
+        "description": "Sigma for balancing weight function.",
+        "required": false
+      },
+      {
+        "name": "foregroundbackgroundgratio",
+        "type": "number",
+        "description": "Foreground/Background ratio",
+        "required": false
+      },
+      {
+        "name": "pixelsize",
+        "type": "number",
+        "description": "Input image pixel size.",
+        "required": true
+      },
+      {
+        "name": "sigma1Px",
+        "type": "number",
+        "description": "Sigma for instance segmentation.",
+        "required": false
+      },
+      {
+        "name": "testing_images",
+        "type": "collection",
+        "description": "Input testing image collection to be processed by this plugin",
+        "required": true
+      },
+      {
+        "name": "training_images",
+        "type": "collection",
+        "description": "Input training image collection to be processed by this plugin",
+        "required": true
+      }
+    ],
+    "outputs": [
+      {
+        "name": "output_directory",
+        "type": "genericData",
+        "description": "Output collection"
+      }
+    ],
+    "ui": [
+      {
+        "key": "inputs.borderWeightFactor",
+        "title": "Pixel Size",
+        "description": "lambda separation"
+      },
+      {
+        "key": "inputs.borderWeightSigmaPx",
+        "title": "Pixel Size",
+        "description": "Sigma for balancing weight function."
+      },
+      {
+        "key": "inputs.foregroundbackgroundgratio",
+        "title": "Pixel Size",
+        "description": "Foreground/Background ratio"
+      },
+      {
+        "key": "inputs.pixelsize",
+        "title": "Pixel Size",
+        "description": "Input image pixel size."
+      },
+      {
+        "key": "inputs.sigma1Px",
+        "title": "Pixel Size",
+        "description": "Sigma for instance segmentation."
+      },
+      {
+        "key": "inputs.testing_images",
+        "title": "testing_images",
+        "description": "Input testing image collection to be processed by this plugin"
+      },
+      {
+        "key": "inputs.training_images",
+        "title": "training_images",
+        "description": "Input training image collection to be processed by this plugin"
+      }
+    ]
+  }
