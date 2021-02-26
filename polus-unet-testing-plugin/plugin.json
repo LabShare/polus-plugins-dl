@@ -30,7 +30,7 @@
       },
       {
         "name": "weights",
-        "type": "generic data collection",
+        "type": "genericData",
         "description": "Weights path for testing.",
         "required": true
       }
