@@ -1,6 +1,8 @@
 # UNet Testing
 
-This WIPP plugin does things, some of which involve math and science. There is likely a lot of handwaving involved when describing how it works, but handwaving should be replaced with a good description. However, someone forgot to edit the README, so handwaving will have to do for now. Contact [Vishakha Goyal](mailto:vishakha.goyal@nih.gov) for more information.
+Bfio implementation of python wrapper by Jan Lause: https://github.com/jlause/unet-segmentation-python. Python wrapper based on the work of Thorsten Falk et al. (ImageJ plugin & caffe backend, https://github.com/lmb-freiburg/Unet-Segmentation). Original work at Nature Methods publication: Falk, Thorsten, et al. "U-Net: deep learning for cell counting, detection, and morphometry." Nature methods 16.1 (2019): 67. https://doi.org/10.1038/s41592-018-0261-2
+
+Contact [Vishakha Goyal](mailto:vishakha.goyal@nih.gov) for more information.
 
 For more information on WIPP, visit the [official WIPP page](https://isg.nist.gov/deepzoomweb/software/wipp).
 
