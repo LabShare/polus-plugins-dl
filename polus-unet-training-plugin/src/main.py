@@ -24,12 +24,12 @@ if __name__=="__main__":
                         help='Input image pixel size', required=True)
     parser.add_argument('--sigma1Px', dest='sigma1Px', type=str, default="10.0",
                         help='Sigma for instance segmentation.', required=False)
-    parser.add_argument('--testing_images', dest='testing_images', type=str,
+    parser.add_argument('--testingImages', dest='testingImages', type=str,
                         help='Input testing image collection to be processed by this plugin', required=True)
-    parser.add_argument('--training_images', dest='training_images', type=str,
+    parser.add_argument('--trainingImages', dest='trainingImages', type=str,
                         help='Input training image collection to be processed by this plugin', required=True)
     # Output arguments
-    parser.add_argument('--output_directory', dest='output_directory', type=str,
+    parser.add_argument('--outDir', dest='outDir', type=str,
                         help='Output collection', required=True)
     
     # Parse the arguments
@@ -44,17 +44,17 @@ if __name__=="__main__":
     logger.info('pixelsize = {}'.format(pixelsize))
     sigma1Px = args.sigma1Px
     logger.info('sigma1Px = {}'.format(sigma1Px))
-    testing_images = args.testing_images
-    if (Path.is_dir(Path(args.testing_images).joinpath('images'))):
+    testingImages = args.testingImages
+    if (Path.is_dir(Path(args.testingImages).joinpath('images'))):
         # switch to images folder if present
-        fpath = str(Path(args.testing_images).joinpath('images').absolute())
-    logger.info('testing_images = {}'.format(testing_images))
-    training_images = args.training_images
-    if (Path.is_dir(Path(args.training_images).joinpath('images'))):
+        fpath = str(Path(args.testingImages).joinpath('images').absolute())
+    logger.info('testingImages = {}'.format(testingImages))
+    trainingImages = args.trainingImages
+    if (Path.is_dir(Path(args.trainingImages).joinpath('images'))):
         # switch to images folder if present
-        fpath = str(Path(args.training_images).joinpath('images').absolute())
-    logger.info('training_images = {}'.format(training_images))
-    output_directory = args.output_directory
-    logger.info('output_directory = {}'.format(output_directory))
-    run_main(training_images, testing_images, pixelsize, foregroundbackgroundgratio, borderWeightFactor, borderWeightSigmaPx, sigma1Px, output_directory)
+        fpath = str(Path(args.trainingImages).joinpath('images').absolute())
+    logger.info('trainingImages = {}'.format(trainingImages))
+    outDir = args.outDir
+    logger.info('outDir = {}'.format(outDir))
+    run_main(trainingImages, testingImages, pixelsize, foregroundbackgroundgratio, borderWeightFactor, borderWeightSigmaPx, sigma1Px, outDir)
     

@@ -26,7 +26,7 @@ This plugin takes one input argument and one output argument:
 | `--foregroundbackgroundgratio` | Foreground/Background ratio | Input | number |
 | `--pixelsize` | Input image pixel size. | Input | number |
 | `--sigma1Px` | Sigma for instance segmentation. | Input | number |
-| `--testing_images` | Input testing image collection to be processed by this plugin | Input | collection |
-| `--training_images` | Input training image collection to be processed by this plugin | Input | collection |
-| `--output_directory` | Output collection | Output | genericData |
+| `--testingImages` | Input testing image collection to be processed by this plugin | Input | collection |
+| `--trainingImages` | Input training image collection to be processed by this plugin | Input | collection |
+| `--outDir` | Output collection | Output | genericData |
 

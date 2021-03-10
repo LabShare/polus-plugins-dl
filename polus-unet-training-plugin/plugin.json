@@ -1,6 +1,6 @@
 {
     "name": "UNet Training",
-    "version": "0.1.1",
+    "version": "0.1.3",
     "title": "UNet Training",
     "description": "WIPP plugin to train UNet model from UFreiburg",
     "author": "Vishakha Goyal (vishakha.goyal@nih.gov)",
@@ -8,7 +8,7 @@
     "repository": "https://github.com/labshare/polus-plugins",
     "website": "https://ncats.nih.gov/preclinical/core/informatics",
     "citation": "",
-    "containerId": "labshare/polus-unet-training-plugin:0.1.1",
+    "containerId": "labshare/polus-unet-training-plugin:0.1.3",
     "inputs": [
       {
         "name": "borderWeightFactor",
@@ -41,13 +41,13 @@
         "required": false
       },
       {
-        "name": "testing_images",
+        "name": "testingImages",
         "type": "collection",
         "description": "Input testing image collection to be processed by this plugin",
         "required": true
       },
       {
-        "name": "training_images",
+        "name": "trainingImages",
         "type": "collection",
         "description": "Input training image collection to be processed by this plugin",
         "required": true
@@ -55,7 +55,7 @@
     ],
     "outputs": [
       {
-        "name": "output_directory",
+        "name": "outDir",
         "type": "genericData",
         "description": "Output collection"
       }
@@ -63,17 +63,17 @@
     "ui": [
       {
         "key": "inputs.borderWeightFactor",
-        "title": "Pixel Size",
+        "title": "borderWeightFactor",
         "description": "lambda separation"
       },
       {
         "key": "inputs.borderWeightSigmaPx",
-        "title": "Pixel Size",
+        "title": "borderWeightSigmaPx",
         "description": "Sigma for balancing weight function."
       },
       {
         "key": "inputs.foregroundbackgroundgratio",
-        "title": "Pixel Size",
+        "title": "foregroundbackgroundgratio",
         "description": "Foreground/Background ratio"
       },
       {
@@ -83,17 +83,17 @@
       },
       {
         "key": "inputs.sigma1Px",
-        "title": "Pixel Size",
+        "title": "sigma1Px",
         "description": "Sigma for instance segmentation."
       },
       {
-        "key": "inputs.testing_images",
-        "title": "testing_images",
+        "key": "inputs.testingImages",
+        "title": "testingImages",
         "description": "Input testing image collection to be processed by this plugin"
       },
       {
-        "key": "inputs.training_images",
-        "title": "training_images",
+        "key": "inputs.trainingImages",
+        "title": "trainingImages",
         "description": "Input training image collection to be processed by this plugin"
       }
     ]

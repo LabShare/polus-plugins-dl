@@ -297,7 +297,7 @@ def createlabelsandweightsfromrois(image, className, roiimage, foregroundbackgro
 
 
 
-def run_main(training_images, testing_images, pixelsize, foregroundbackgroundratio, borderWeightFactor, borderWeightSigmaPx, sigma1Px, output_directory):
+def run_main(trainingImages, testingImages, pixelsize, foregroundbackgroundratio, borderWeightFactor, borderWeightSigmaPx, sigma1Px, outDir):
 
     img_pixelsize_x = int(pixelsize)
     img_pixelsize_y = int(pixelsize)
@@ -313,11 +313,11 @@ def run_main(training_images, testing_images, pixelsize, foregroundbackgroundrat
     className = []
     className.append("Background")
     className.append("cell")
-    rootdir1 = Path(training_images)
+    rootdir1 = Path(trainingImages)
     ind = 0
     try:     
-        for PATH in rootdir1.glob('*image*'):
-                mask_path = str(PATH).replace("image", "mask")
+        for PATH in rootdir1.glob('*img*'):
+                mask_path = str(PATH).replace("img", "mask")
                 mask_path = Path(mask_path)
                 print(PATH, mask_path)
                 tile_grid_size = 1
@@ -357,13 +357,13 @@ def run_main(training_images, testing_images, pixelsize, foregroundbackgroundrat
         file.write("_train_"+str(i)+".h5"+"\n")
     file.close()
 
-    rootdir1 = Path(testing_images)
+    rootdir1 = Path(testingImages)
     filename = 'validfilelist.txt'
     file = open(filename, "w+")
     total_valid = 0; ind = 0
     try:     
-        for PATH in rootdir1.glob('*image*'):
-                mask_path = str(PATH).replace("image", "mask")
+        for PATH in rootdir1.glob('*img*'):
+                mask_path = str(PATH).replace("img", "mask")
                 mask_path = Path(mask_path)
                 print(PATH, mask_path)
                 tile_grid_size = 1
@@ -405,4 +405,4 @@ def run_main(training_images, testing_images, pixelsize, foregroundbackgroundrat
 
     solverPrototxtAbsolutePath = "solver.prototxt"
     weightfile_path = "caffemodels/2d_cell_net_v0.caffemodel.h5"
-    run_unet_training(modelfile_path, weightfile_path,solverPrototxtAbsolutePath, output_directory)
+    run_unet_training(modelfile_path, weightfile_path,solverPrototxtAbsolutePath, outDir)

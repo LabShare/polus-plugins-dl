@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 
-def run_unet_training(modelfile_path, weightfile_path,solverPrototxtAbsolutePath, output_directory, gpu_flag='',
+def run_unet_training(modelfile_path, weightfile_path,solverPrototxtAbsolutePath, outDir, gpu_flag='',
                           cleanup=True):
 
     #fix parameters
@@ -50,7 +50,7 @@ def run_unet_training(modelfile_path, weightfile_path,solverPrototxtAbsolutePath
         print(e)
 
 
-    filename = str(Path(output_directory)/"results.txt")
+    filename = str(Path(outDir)/"results.txt")
     file = open(filename, "w+")
     file.write("w")
     results = output.splitlines()
@@ -58,4 +58,4 @@ def run_unet_training(modelfile_path, weightfile_path,solverPrototxtAbsolutePath
         file.write(line+"\n")
     file.close()
     
-    os.system("cp snapshot_iter_100.caffemodel.h5 "+output_directory)
+    os.system("cp snapshot_iter_100.caffemodel.h5 "+outDir)
