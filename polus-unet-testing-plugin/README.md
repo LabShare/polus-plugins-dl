@@ -22,8 +22,8 @@ This plugin takes one input argument and one output argument:
 | Name          | Description             | I/O    | Type   |
 |---------------|-------------------------|--------|--------|
 | `--filename` | Weights file for testing. | Input | string |
-| `--input_directory` | Input image collection to be processed by this plugin. | Input | collection |
+| `--inpDir` | Input image collection to be processed by this plugin. | Input | collection |
 | `--pixelsize` | Input image pixel size. | Input | number |
 | `--weights` | Weights path for testing. | Input | generic data collection |
-| `--output_directory` | Output collection | Output | collection |
+| `--outDir` | Output collection | Output | collection |
 

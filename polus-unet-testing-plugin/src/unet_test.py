@@ -128,16 +128,15 @@ def unet_segmentation(input_img,img_pixelsize_x,img_pixelsize_y,
     return segmentation_mask
 
 
-def run_segmentation(input_directory, pixelsize, weights, filename, output_directory):
+def run_segmentation(inpDir, pixelsize, weights, filename, outDir):
 
     img_pixelsize_x = int(pixelsize)                 
     img_pixelsize_y = int(pixelsize)
     modelfile_path = "2d_cell_net_v0-cytoplasm.modeldef.h5"
     weightfile_path = str(Path(weights)/filename)
-    # weightfile_path = "snapshot_cytoplasm_iter_1000.caffemodel.h5"
     iofile_path = "output.h5"
-    out_path = Path(output_directory)
-    rootdir1 = Path(input_directory)
+    out_path = Path(outDir)
+    rootdir1 = Path(inpDir)
     """ Convert the tif to tiled tiff """
     i = 0
     try:
@@ -171,7 +170,8 @@ def run_segmentation(input_directory, pixelsize, weights, filename, output_direc
                                             img = unet_segmentation(input_img,img_pixelsize_x, img_pixelsize_y,modelfile_path,weightfile_path,iofile_path)
                                             bw[y:y_max, x:x_max, z:z+1, 0, 0] = img.astype(br.dtype)
                                             os.remove("output.h5")
+                                            print("output.h5 removed.")
                             i+=1
 
     finally:
-        print("done")
+        print("Bfio exit.")

@@ -13,11 +13,11 @@
       {
         "name": "filename",
         "type": "string",
-        "description": "Weights file for testing.",
+        "description": "Weights file name for testing.",
         "required": true
       },
       {
-        "name": "input_directory",
+        "name": "inpDir",
         "type": "collection",
         "description": "Input image collection to be processed by this plugin.",
         "required": true
@@ -31,13 +31,13 @@
       {
         "name": "weights",
         "type": "genericData",
-        "description": "Weights path for testing.",
+        "description": "Weights file path for testing.",
         "required": true
       }
     ],
     "outputs": [
       {
-        "name": "output_directory",
+        "name": "outDir",
         "type": "collection",
         "description": "Output collection"
       }
@@ -46,10 +46,10 @@
       {
         "key": "inputs.filename",
         "title": "weight file name",
-        "description": "Weights file for testing."
+        "description": "Weights file name for testing."
       },
       {
-        "key": "inputs.input_directory",
+        "key": "inputs.inpDir",
         "title": "Input collection",
         "description": "Input image collection to be processed by this plugin."
       },
@@ -61,7 +61,7 @@
       {
         "key": "inputs.weights",
         "title": "weight collection",
-        "description": "Weights path for testing."
+        "description": "Weights file path for testing."
       }
     ]
   }
