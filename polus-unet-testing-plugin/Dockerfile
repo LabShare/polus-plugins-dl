@@ -1,5 +1,5 @@
 
-FROM labshare/polus-bfio-util:2.0.4-tensorflow
+FROM labshare/polus-bfio-util:2.0.6-slim-buster
 
 COPY VERSION /
 		

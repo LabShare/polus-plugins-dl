@@ -17,12 +17,13 @@ If WIPP is running, navigate to the plugins page and add a new plugin. Paste the
 
 ## Options
 
-This plugin takes one input argument and one output argument:
+This plugin takes five input arguments and one output argument:
 
 | Name          | Description             | I/O    | Type   |
 |---------------|-------------------------|--------|--------|
-| `--filename` | Weights file for testing. | Input | string |
+| `--weightsfilename` | Weights file for testing. | Input | string |
 | `--inpDir` | Input image collection to be processed by this plugin. | Input | collection |
+| `--filePattern` | File name pattern to filter data. | Input | string |
 | `--pixelsize` | Input image pixel size. | Input | number |
 | `--weights` | Weights path for testing. | Input | generic data collection |
 | `--outDir` | Output collection | Output | collection |

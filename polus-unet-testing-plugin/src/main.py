@@ -1,8 +1,4 @@
-# from bfio.bfio import BioReader, BioWriter
-# import bioformats
-# import javabridge as jutil
 import argparse, logging, subprocess, time, multiprocessing, sys
-# import numpy as np
 from pathlib import Path
 from unet_test import run_segmentation
 
@@ -18,10 +14,12 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser(prog='main', description='WIPP plugin to test UNet model from UFreiburg')
     
     # Input arguments
-    parser.add_argument('--filename', dest='filename', type=str,
+    parser.add_argument('--weightsfilename', dest='weightsfilename', type=str,
                         help='Weights file name for testing.', required=True)
     parser.add_argument('--inpDir', dest='inpDir', type=str,
                         help='Input image collection to be processed by this plugin.', required=True)
+    parser.add_argument('--filePattern', dest='filePattern', type=str,
+                        help='Filename pattern to filter data.', required=True)
     parser.add_argument('--pixelsize', dest='pixelsize', type=str,
                         help='Input image pixel size.', required=True)
     parser.add_argument('--weights', dest='weights', type=str,
@@ -32,18 +30,20 @@ if __name__=="__main__":
     
     # Parse the arguments
     args = parser.parse_args()
-    filename = args.filename
-    logger.info('filename = {}'.format(filename))
+    weightsfilename = args.weightsfilename
+    logger.info('weightsfilename = {}'.format(weightsfilename))
     inpDir = args.inpDir
     if (Path.is_dir(Path(args.inpDir).joinpath('images'))):
         # switch to images folder if present
         fpath = str(Path(args.inpDir).joinpath('images').absolute())
     logger.info('inpDir = {}'.format(inpDir))
+    filePattern = args.filePattern
+    logger.info('filePattern = {}'.format(filePattern))
     pixelsize = args.pixelsize
     logger.info('pixelsize = {}'.format(pixelsize))
     weights = args.weights
     logger.info('weights = {}'.format(weights))
     outDir = args.outDir
     logger.info('outDir = {}'.format(outDir))
-    run_segmentation(inpDir, pixelsize, weights, filename, outDir)
+    run_segmentation(inpDir,filePattern, pixelsize, weights, weightsfilename, outDir)
     logger.info('Inference completed.')

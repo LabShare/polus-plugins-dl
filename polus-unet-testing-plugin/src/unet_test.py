@@ -9,9 +9,21 @@ from bfio import BioReader, BioWriter, LOG4J, JARS
 from pathlib import Path
 from multiprocessing import cpu_count
 import json
+import filepattern
 
 def rescale(size,img,mode='uint8'):
-    
+    """Rescales the normalized image.
+
+    Rescales image if image pixel size is different from model resolution.
+
+    Args:
+        size: rescale factor in pixel.
+        img: normalized image.
+
+    Returns:
+        Rescaled image.
+    """
+
     if mode == 'float32':
         #for floating point images:
         img = np.float32(img)
@@ -26,8 +38,17 @@ def rescale(size,img,mode='uint8'):
 
 
 def normalize(img):
+    """Normalizes the original image.
 
-    ###normalize image
+    Normalizes the input image based on min/max normalization.
+
+    Args:
+        img: normalized image.
+
+    Returns:
+        Normalized image.
+    """
+
     img_min = np.min(img)
     img_max = np.max(img)
     img_centered = img - img_min
@@ -35,16 +56,28 @@ def normalize(img):
     return np.true_divide(img_centered, img_range)
 
 
-def unet_segmentation(input_img,img_pixelsize_x,img_pixelsize_y,
-                          modelfile_path,weightfile_path,iofile_path,
-                          tiling_x=4,tiling_y=4,gpu_flag='',
+def unet_segmentation(input_img,img_pixelsize_x,img_pixelsize_y,weightfile_path,iofile_path,
                           cleanup=True):
+    """Run unet segmentation.
 
-    #fix parameters
-    n_inputchannels=1
+    Preprocess image and run unet segmentation using caffe binary.
+
+    Args:
+        input_img: input image to be segmented.
+        img_pixelsize_x: input image pixel size in x.
+        img_pixelsize_y: input image pixel size in y.
+        weightfile_path: weight file path.
+        iofile_path: input/output file to save the preprocessed image and final segmentation score.
+
+    Returns:
+        Segmentation Mask.
+    """
+
+    #fixed parameters
     n_iterations=0
-    
-    
+    tiling_x=4
+    tiling_y=4
+    modelfile_path = "2d_cell_net_v0-cytoplasm.modeldef.h5"
     ## prepare image rescaling
     np.set_printoptions(threshold=sys.maxsize)
 
@@ -71,54 +104,10 @@ def unet_segmentation(input_img,img_pixelsize_x,img_pixelsize_y,
     iofile_h5.create_dataset('data',data=h5ready_img)
     iofile_h5.close()
 
-    # ### run caffe_unet commands
-
-    # #assemble sanity check command
-    command_sanitycheck = []
-    command_sanitycheck.append("caffe_unet")
-    command_sanitycheck.append("check_model_and_weights_h5")
-    command_sanitycheck.append("-model")
-    command_sanitycheck.append(modelfile_path)
-    command_sanitycheck.append("-weights")
-    command_sanitycheck.append(weightfile_path)
-    command_sanitycheck.append("-n_channels")
-    command_sanitycheck.append(str(n_inputchannels))
-    if gpu_flag:
-        command_sanitycheck.append("-gpu")
-        command_sanitycheck.append(gpu_flag)
-     #runs command and puts console output to stdout
-    sanitycheck_proc = subprocess.run(command_sanitycheck,stdout=subprocess.PIPE)
-    # #aborts if process failed
-    sanitycheck_proc.check_returncode()
-    #assemble prediction command
-    command_predict = []
-    command_predict.append("caffe_unet")
-    command_predict.append("tiled_predict")
-    command_predict.append("-infileH5")
-    command_predict.append(iofile_path)
-    command_predict.append("-outfileH5")
-    command_predict.append(iofile_path)
-    command_predict.append("-model")
-    command_predict.append(modelfile_path)
-    command_predict.append("-weights")
-    command_predict.append(weightfile_path)
-    command_predict.append("-iterations")
-    command_predict.append(str(n_iterations))
-    command_predict.append("-n_tiles")
-    command_predict.append(str(tiling_x)+'x'+str(tiling_y))
-    command_predict.append("-gpu")
-    command_predict.append(gpu_flag)
-    if gpu_flag:
-        command_predict.append("-gpu")
-        command_predict.append(gpu_flag)
-    #run command 
-    try:
-        output = subprocess.check_output(command_predict, stderr=subprocess.STDOUT).decode()
-        print(output)
-    except subprocess.CalledProcessError as e:
-        print(e.output.decode()) # print out the stdout messages up to the exception
-        print(e)
-
+    ### run caffe_unet commands
+    cmd = "caffe_unet tiled_predict -infileH5 "+iofile_path+" -outfileH5 "+iofile_path+" -model "+modelfile_path+\
+          " -weights "+weightfile_path+" -iterations "+str(n_iterations)+" -n_tiles "+str(tiling_x)+"x"+str(tiling_y)
+    os.system(cmd)
     # load results from io file and return
     output_h5 = h5py.File(iofile_path)
     score = output_h5['score'][:]
@@ -128,50 +117,57 @@ def unet_segmentation(input_img,img_pixelsize_x,img_pixelsize_y,
     return segmentation_mask
 
 
-def run_segmentation(inpDir, pixelsize, weights, filename, outDir):
+def run_segmentation(inpDir, filePattern, pixelsize, weights, weightsfilename, outDir):
+    """Save segmentation mask using Biowriter.
+
+    Read input image, call segmentation function and save output mask using Biowriter.
+
+    Args:
+        inpDir: input image directory.
+        filePattern: input file name pattern to filter data.
+        pixelsize: image pixel size.
+        weights: weights file folder.
+        weightsfilename: weights file name.
+        outDir: output directory to save masks.
+    """
 
     img_pixelsize_x = int(pixelsize)                 
     img_pixelsize_y = int(pixelsize)
-    modelfile_path = "2d_cell_net_v0-cytoplasm.modeldef.h5"
-    weightfile_path = str(Path(weights)/filename)
+    weightfile_path = str(Path(weights)/weightsfilename)
     iofile_path = "output.h5"
     out_path = Path(outDir)
-    rootdir1 = Path(inpDir)
+    rootdir = Path(inpDir)   
+    fp = filepattern.FilePattern(rootdir,filePattern)
+
     """ Convert the tif to tiled tiff """
     i = 0
-    try:
-        for PATH in rootdir1.glob('**/*'):
-                tile_grid_size = 1
-                tile_size = tile_grid_size * 1024
+    # for PATH in rootdir.glob('**/*'):
+    for fP in fp():
+        for PATH in fP:
+            print(PATH.get("file"))
+            tile_grid_size = 1
+            tile_size = tile_grid_size * 1024
 
-                # Set up the BioReader
-                with BioReader(PATH,backend='python',max_workers=cpu_count()) as br:
- 
-                    # Loop through timepoints
-                    for t in range(br.T):
+            # Set up the BioReader
+            with BioReader(PATH.get("file"), backend='python',max_workers=cpu_count()) as br:
 
-                        # Loop through channels
-                        for c in range(br.C):
+                with BioWriter(out_path.joinpath(f"out{i}.ome.tif"),metadata = br.metadata, backend='python') as bw:
 
-                            with BioWriter(out_path.joinpath(f"out{i}.ome.tif"),metadata = br.metadata, backend='python') as bw:
+                        # Loop through z-slices
+                    for z in range(br.Z):
 
-                                 # Loop through z-slices
-                                for z in range(br.Z):
+                        # Loop across the length of the image
+                        for y in range(0,br.Y,tile_size):
+                            y_max = min([br.Y,y+tile_size])
 
-                                    # Loop across the length of the image
-                                    for y in range(0,br.Y,tile_size):
-                                        y_max = min([br.Y,y+tile_size])
+                            # Loop across the depth of the image
+                            for x in range(0,br.X,tile_size):
+                                x_max = min([br.X,x+tile_size])
 
-                                        # Loop across the depth of the image
-                                        for x in range(0,br.X,tile_size):
-                                            x_max = min([br.X,x+tile_size])
-
-                                            input_img = np.squeeze(br[y:y_max,x:x_max,z:z+1,c,t])
-                                            img = unet_segmentation(input_img,img_pixelsize_x, img_pixelsize_y,modelfile_path,weightfile_path,iofile_path)
-                                            bw[y:y_max, x:x_max, z:z+1, 0, 0] = img.astype(br.dtype)
-                                            os.remove("output.h5")
-                                            print("output.h5 removed.")
-                            i+=1
-
-    finally:
-        print("Bfio exit.")
+                                input_img = np.squeeze(br[y:y_max,x:x_max,z:z+1,0,0])
+                                img = unet_segmentation(input_img,img_pixelsize_x, img_pixelsize_y,weightfile_path,iofile_path)
+                                bw.dtype = np.uint8
+                                bw[y:y_max, x:x_max, z:z+1, 0, 0] = img.astype(np.uint8)
+                                os.remove("output.h5")
+                                print("output.h5 removed.")
+                i+=1

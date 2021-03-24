@@ -1,19 +1,25 @@
 {
     "name": "UNet Testing",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "title": "UNet Testing",
     "description": "WIPP plugin to test UNet model from UFreiburg",
     "author": "Vishakha Goyal (vishakha.goyal@nih.gov)",
     "institution": "National Center for Advancing Translational Sciences, National Institutes of Health",
     "repository": "https://github.com/labshare/polus-plugins",
     "website": "https://ncats.nih.gov/preclinical/core/informatics",
-    "citation": "",
-    "containerId": "labshare/polus-unet-testing-plugin:0.1.1",
+    "citation": "U-Net – Deep Learning for Cell Counting, Detection, and Morphometry. Nature Methods, 16, 67-70, 2019",
+    "containerId": "labshare/polus-unet-testing-plugin:0.1.2",
     "inputs": [
       {
-        "name": "filename",
+        "name": "weightsfilename",
         "type": "string",
         "description": "Weights file name for testing.",
+        "required": true
+      },
+      {
+        "name": "filePattern",
+        "type": "string",
+        "description": "Filename pattern to filter data.",
         "required": true
       },
       {
@@ -44,7 +50,7 @@
     ],
     "ui": [
       {
-        "key": "inputs.filename",
+        "key": "inputs.weightsfilename",
         "title": "weight file name",
         "description": "Weights file name for testing."
       },
@@ -52,6 +58,11 @@
         "key": "inputs.inpDir",
         "title": "Input collection",
         "description": "Input image collection to be processed by this plugin."
+      },
+      {
+        "key": "inputs.filePattern",
+        "title": "Input filename pattern",
+        "description": "Filename pattern to filter data."
       },
       {
         "key": "inputs.pixelsize",
