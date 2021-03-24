@@ -141,7 +141,6 @@ def run_segmentation(inpDir, filePattern, pixelsize, weights, weightsfilename, o
 
     """ Convert the tif to tiled tiff """
     i = 0
-    # for PATH in rootdir.glob('**/*'):
     for fP in fp():
         for PATH in fP:
             print(PATH.get("file"))
@@ -169,5 +168,4 @@ def run_segmentation(inpDir, filePattern, pixelsize, weights, weightsfilename, o
                                 bw.dtype = np.uint8
                                 bw[y:y_max, x:x_max, z:z+1, 0, 0] = img.astype(np.uint8)
                                 os.remove("output.h5")
-                                print("output.h5 removed.")
                 i+=1
