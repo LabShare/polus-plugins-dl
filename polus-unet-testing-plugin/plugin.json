@@ -7,7 +7,7 @@
     "institution": "National Center for Advancing Translational Sciences, National Institutes of Health",
     "repository": "https://github.com/labshare/polus-plugins",
     "website": "https://ncats.nih.gov/preclinical/core/informatics",
-    "citation": "U-Net – Deep Learning for Cell Counting, Detection, and Morphometry. Nature Methods, 16, 67-70, 2019",
+    "citation": "U-Net – Deep Learning for Cell Counting, Detection, and Morphometry. https://doi.org/10.1038/s41592-018-0261-2",
     "containerId": "labshare/polus-unet-testing-plugin:0.1.2",
     "inputs": [
       {
