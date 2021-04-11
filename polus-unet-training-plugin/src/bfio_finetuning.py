@@ -19,7 +19,6 @@ from multiprocessing import cpu_count
 import logging
 import filepattern
 
-from matplotlib import pyplot as plt
 
 ######## Constants ########
 tiling_x = 508
@@ -289,8 +288,6 @@ def addLabelsAndWeightsToBlobs(image, classlabelsdata, instancelabelsdata, nComp
     _labels = np.reshape(labelsData, (H,W))
     _samplepdf = np.reshape(samplePdfData, (H,W))
 
-    # plt.imshow(_weights)
-    # plt.show()
     return _weights, _labels, _samplepdf
 
 
@@ -367,7 +364,6 @@ def run_main(trainingImages, testingImages, trainingLabels, testingLabels, pixel
     try:     
         filepath = pathlib.Path(__file__).parent
         filepath = filepath.joinpath(rootdir1)
-        # i = 0
         for file in filepath.iterdir():
             img_path = Path(file)
             mask_path = Path(trainingLabels+"/"+file.name)
@@ -377,7 +373,6 @@ def run_main(trainingImages, testingImages, trainingLabels, testingLabels, pixel
             tile_size = tile_grid_size * 1024
             with BioReader(img_path,backend='python',max_workers=cpu_count()) as br:
                 with BioReader(mask_path,backend='python',max_workers=cpu_count()) as br_label:
-                    iofile_path = "_train_"+ str(ind) +".h5"
                     # Loop through z-slices
                     for z in range(br.Z):
 
@@ -387,6 +382,7 @@ def run_main(trainingImages, testingImages, trainingLabels, testingLabels, pixel
 
                             # Loop across the depth of the image
                             for x in range(0,br.X,tile_size):
+                                iofile_path = "_train_"+ str(ind) +".h5"
                                 x_max = min([br.X,x+tile_size])
                                 img = np.squeeze(br[y:y_max,x:x_max,z:z+1,0,0])
                                 roiimage = np.squeeze(br_label[y:y_max,x:x_max,z:z+1,0,0])
@@ -424,7 +420,6 @@ def run_main(trainingImages, testingImages, trainingLabels, testingLabels, pixel
             tile_size = tile_grid_size * 1024
             with BioReader(img_path,backend='python',max_workers=cpu_count()) as br:
                 with BioReader(mask_path,backend='python',max_workers=cpu_count()) as br_label:
-                    valid_name = "_valid_"+str(ind) + "_"
                     # Loop through z-slices
                     for z in range(br.Z):
 
@@ -434,6 +429,7 @@ def run_main(trainingImages, testingImages, trainingLabels, testingLabels, pixel
 
                             # Loop across the depth of the image
                             for x in range(0,br.X,tile_size):
+                                valid_name = "_valid_"+str(ind) + "_"
                                 x_max = min([br.X,x+tile_size])
                                 img = np.squeeze(br[y:y_max,x:x_max,z:z+1,0,0])
                                 roiimage = np.squeeze(br_label[y:y_max,x:x_max,z:z+1,0,0])
@@ -450,15 +446,15 @@ def run_main(trainingImages, testingImages, trainingLabels, testingLabels, pixel
         logger.info("validation blobs created.")
         validationfile.close()
 
-    # ## Create Solver file
-    # logger.info("creating solver file ...")
-    # cf = CaffeSolver()
-    # cf.write("solver.prototxt", str(total_valid), iterations)
-    # solverPrototxtAbsolutePath = "solver.prototxt"
+    ## Create Solver file
+    logger.info("creating solver file ...")
+    cf = CaffeSolver()
+    cf.write("solver.prototxt", str(total_valid), iterations)
+    solverPrototxtAbsolutePath = "solver.prototxt"
 
-    # ## Run Unet Training
-    # logger.info("training started ...")
-    # weightfile_path = "caffemodels/2d_cell_net_v0.caffemodel.h5"
-    # run_unet_training(modelfile_path, weightfile_path,solverPrototxtAbsolutePath, outDir)
-    # os.system("cp snapshot_iter_"+iterations+".caffemodel.h5 "+outDir)
-    # logger.info("training completed.")
+    ## Run Unet Training
+    logger.info("training started ...")
+    weightfile_path = "caffemodels/2d_cell_net_v0.caffemodel.h5"
+    run_unet_training(modelfile_path, weightfile_path,solverPrototxtAbsolutePath, outDir)
+    os.system("cp snapshot_iter_"+iterations+".caffemodel.h5 "+outDir)
+    logger.info("training completed.")
