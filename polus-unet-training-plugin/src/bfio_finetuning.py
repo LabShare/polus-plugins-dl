@@ -19,6 +19,8 @@ from multiprocessing import cpu_count
 import logging
 import filepattern
 
+from matplotlib import pyplot as plt
+
 ######## Constants ########
 tiling_x = 508
 tiling_y = 508
@@ -43,6 +45,7 @@ def normalize(img):
     img_max = np.max(img)
     img_centered = img - img_min
     img_range = img_max - img_min
+
     return np.true_divide(img_centered, img_range)
 
 
@@ -68,6 +71,7 @@ def getOutputTileShape(inputTileShape, modelfile_path):
     modelfile_h5.close()
     for d in range(2):
         res[d] = inputTileShape[d] - (padInput[d] - padOutput[d])
+
     return res
 
 
@@ -218,6 +222,7 @@ def addLabelsAndWeightsToBlobs(image, classlabelsdata, instancelabelsdata, nComp
         labelsData[i] = float(0.0)
         weightsData[i] = float(-1.0)
         samplePdfData[i] = float(foregroundbackgroundratio)
+
     for x in range(H):
         for y in range(W):
             idx+=1
@@ -242,32 +247,20 @@ def addLabelsAndWeightsToBlobs(image, classlabelsdata, instancelabelsdata, nComp
                     weightsData[idx] = float(1.0)
                     samplePdfData[idx] = float(1.0)
 
-    min1Dist = np.zeros([H*W])
-    min2Dist = np.zeros([H*W])
+    min1Dist = [BG_VALUE for i in range(H*W)]
+    min2Dist = [BG_VALUE for i in range(H*W)]
+    
     extraWeights = np.zeros([H*W])
     va = 1.0 - foregroundbackgroundratio
-    for i in range(H*W):
-        min1Dist[i] = BG_VALUE
-        min2Dist[i] = BG_VALUE
+
+    logger.info("nComponents = {}".format(nComponents))
 
     for i in range(1, nComponents+1):
         instancelabels = np.zeros([H, W], dtype = np.uint8)
-        idx = 0
-        for x in range(H):
-            for y in range(W):
-                if instancelabelsdata[idx] == i:
-                    instancelabels[x,y] = 0
-                else:
-                    instancelabels[x,y] = 255
-                idx+=1
+        instancelabels = np.reshape(np.where(instancelabelsdata == i, 0, 255), (H, W))
         d = np.zeros([H*W])
-        dist = cv2.cv2.distanceTransform(instancelabels, cv2.cv2.DIST_L2, 3)
-        idx = 0
-        for x in range(H):
-            for y in range(W):
-                d[idx] = dist[x,y]
-                idx+=1
-
+        dist = cv2.cv2.distanceTransform(np.uint8(instancelabels), cv2.cv2.DIST_L2, 3)
+        d = dist.flatten()
         for j in range(H*W):
             min1dist = min1Dist[j]
             min2dist = min(min2Dist[j], float(d[j]))
@@ -282,21 +275,22 @@ def addLabelsAndWeightsToBlobs(image, classlabelsdata, instancelabelsdata, nComp
             wa = math.exp(-(d1 * d1) / (2 * sigma1Px * sigma1Px))
             we = math.exp(-(d1 + d2) * (d1 + d2) /(2 * borderWeightSigmaPx * borderWeightSigmaPx))
             extraWeights[z * H * W + i] += borderWeightFactor * we + va * wa
+    
     for z in range(D):
       for i in range(H*W):
         if (weightsData[i] >= float(0.0)): continue
         weightsData[i] = float(foregroundbackgroundratio) + extraWeights[z * H * W + i]
+    
     idx = 0
     _weights = np.ones([H,W])
     _samplepdf = np.ones([H,W])
     _labels = np.ones([H,W])
-    for ht in range(H):
-        for wd in range(W):
-            _weights[ht, wd] = weightsData[idx]
-            _labels[ht, wd] = labelsData[idx]
-            _samplepdf[ht, wd] = samplePdfData[idx]
-            idx+=1
+    _weights = np.reshape(weightsData, (H,W))
+    _labels = np.reshape(labelsData, (H,W))
+    _samplepdf = np.reshape(samplePdfData, (H,W))
 
+    # plt.imshow(_weights)
+    # plt.show()
     return _weights, _labels, _samplepdf
 
 
@@ -373,7 +367,7 @@ def run_main(trainingImages, testingImages, trainingLabels, testingLabels, pixel
     try:     
         filepath = pathlib.Path(__file__).parent
         filepath = filepath.joinpath(rootdir1)
-        i = 0
+        # i = 0
         for file in filepath.iterdir():
             img_path = Path(file)
             mask_path = Path(trainingLabels+"/"+file.name)
@@ -420,7 +414,7 @@ def run_main(trainingImages, testingImages, trainingLabels, testingLabels, pixel
     try:     
         filepath = pathlib.Path(__file__).parent
         filepath = filepath.joinpath(rootdir2)
-        i = 0
+        # i = 0
         for file in filepath.iterdir():
             img_path = Path(file)
             mask_path = Path(testingLabels+"/"+file.name)
@@ -456,15 +450,15 @@ def run_main(trainingImages, testingImages, trainingLabels, testingLabels, pixel
         logger.info("validation blobs created.")
         validationfile.close()
 
-    ## Create Solver file
-    logger.info("creating solver file ...")
-    cf = CaffeSolver()
-    cf.write("solver.prototxt", str(total_valid), iterations)
-    solverPrototxtAbsolutePath = "solver.prototxt"
+    # ## Create Solver file
+    # logger.info("creating solver file ...")
+    # cf = CaffeSolver()
+    # cf.write("solver.prototxt", str(total_valid), iterations)
+    # solverPrototxtAbsolutePath = "solver.prototxt"
 
-    ## Run Unet Training
-    logger.info("training started ...")
-    weightfile_path = "caffemodels/2d_cell_net_v0.caffemodel.h5"
-    run_unet_training(modelfile_path, weightfile_path,solverPrototxtAbsolutePath, outDir)
-    os.system("cp snapshot_iter_"+iterations+".caffemodel.h5 "+outDir)
-    logger.info("training completed.")
+    # ## Run Unet Training
+    # logger.info("training started ...")
+    # weightfile_path = "caffemodels/2d_cell_net_v0.caffemodel.h5"
+    # run_unet_training(modelfile_path, weightfile_path,solverPrototxtAbsolutePath, outDir)
+    # os.system("cp snapshot_iter_"+iterations+".caffemodel.h5 "+outDir)
+    # logger.info("training completed.")
