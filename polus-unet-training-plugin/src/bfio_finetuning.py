@@ -386,11 +386,12 @@ def run_main(trainingImages, testingImages, trainingLabels, testingLabels, pixel
                                 x_max = min([br.X,x+tile_size])
                                 img = np.squeeze(br[y:y_max,x:x_max,z:z+1,0,0])
                                 roiimage = np.squeeze(br_label[y:y_max,x:x_max,z:z+1,0,0])
-                                _data = normalize(img)
-                                classlabelsdata, instancelabelsdata, total_instances = createlabelsandweightsfromrois(img, roiimage)
-                                _weights, _labels, _samplepdf = addLabelsAndWeightsToBlobs(img, classlabelsdata, instancelabelsdata, total_instances, foregroundbackgroundratio, borderWeightFactor, borderWeightSigmaPx, sigma1Px)
-                                saveBlobs(_data, className, iofile_path, _weights, _labels, _samplepdf, foregroundbackgroundratio, borderWeightFactor, borderWeightSigmaPx, sigma1Px)
-                                ind+=1
+                                if np.unique(roiimage).any()>0:
+                                    _data = normalize(img)
+                                    classlabelsdata, instancelabelsdata, total_instances = createlabelsandweightsfromrois(img, roiimage)
+                                    _weights, _labels, _samplepdf = addLabelsAndWeightsToBlobs(img, classlabelsdata, instancelabelsdata, total_instances, foregroundbackgroundratio, borderWeightFactor, borderWeightSigmaPx, sigma1Px)
+                                    saveBlobs(_data, className, iofile_path, _weights, _labels, _samplepdf, foregroundbackgroundratio, borderWeightFactor, borderWeightSigmaPx, sigma1Px)
+                                    ind+=1
 
     finally:
         logger.info("training blobs created.")
@@ -433,14 +434,15 @@ def run_main(trainingImages, testingImages, trainingLabels, testingLabels, pixel
                                 x_max = min([br.X,x+tile_size])
                                 img = np.squeeze(br[y:y_max,x:x_max,z:z+1,0,0])
                                 roiimage = np.squeeze(br_label[y:y_max,x:x_max,z:z+1,0,0])
-                                _data = normalize(img)
-                                classlabelsdata, instancelabelsdata, total_instances = createlabelsandweightsfromrois(img, roiimage)
-                                _weights, _labels, _samplepdf = addLabelsAndWeightsToBlobs(img, classlabelsdata, instancelabelsdata, total_instances, foregroundbackgroundratio, borderWeightFactor, borderWeightSigmaPx, sigma1Px)
-                                tiles = saveTiledBlobs(_data, _weights, _labels, modelfile_path, valid_name)
-                                for t in range(tiles):
-                                    validationfile.write("_valid_" + str(ind)+ "_"+ str(t) + ".h5" + "\n")
-                                ind+=1
-                                total_valid += tiles
+                                if np.unique(roiimage).any()>0:
+                                    _data = normalize(img)
+                                    classlabelsdata, instancelabelsdata, total_instances = createlabelsandweightsfromrois(img, roiimage)
+                                    _weights, _labels, _samplepdf = addLabelsAndWeightsToBlobs(img, classlabelsdata, instancelabelsdata, total_instances, foregroundbackgroundratio, borderWeightFactor, borderWeightSigmaPx, sigma1Px)
+                                    tiles = saveTiledBlobs(_data, _weights, _labels, modelfile_path, valid_name)
+                                    for t in range(tiles):
+                                        validationfile.write("_valid_" + str(ind)+ "_"+ str(t) + ".h5" + "\n")
+                                    ind+=1
+                                    total_valid += tiles
 
     finally:
         logger.info("validation blobs created.")
