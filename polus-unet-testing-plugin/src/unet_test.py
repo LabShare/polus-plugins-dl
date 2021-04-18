@@ -150,7 +150,7 @@ def run_segmentation(inpDir, filePattern, pixelsize, weights, weightsfilename, o
             # Set up the BioReader
             with BioReader(PATH.get("file"), backend='python',max_workers=cpu_count()) as br:
 
-                with BioWriter(out_path.joinpath(f"out{i}.ome.tif"),metadata = br.metadata, backend='python') as bw:
+                with BioWriter(out_path.joinpath(PATH.get("file").name),metadata = br.metadata, backend='python') as bw:
 
                         # Loop through z-slices
                     for z in range(br.Z):
