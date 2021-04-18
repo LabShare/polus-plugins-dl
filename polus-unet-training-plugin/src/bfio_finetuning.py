@@ -214,13 +214,10 @@ def addLabelsAndWeightsToBlobs(image, classlabelsdata, instancelabelsdata, nComp
     dx = [ -1, -1, -1,  0 ]
     dz = [ 0,  0,  0,  0 ]  
     idx = -1
-    labelsData = np.zeros([H*W])
-    weightsData = np.zeros([H*W])
-    samplePdfData = np.zeros([H*W])
-    for i in range(H*W):
-        labelsData[i] = float(0.0)
-        weightsData[i] = float(-1.0)
-        samplePdfData[i] = float(foregroundbackgroundratio)
+    labelsData = [float(0.0) for i in range(H*W)]
+    weightsData = [float(-1.0) for i in range(H*W)]
+    samplePdfData = [float(foregroundbackgroundratio) for i in range(H*W)]
+
 
     for x in range(H):
         for y in range(W):
@@ -280,10 +277,6 @@ def addLabelsAndWeightsToBlobs(image, classlabelsdata, instancelabelsdata, nComp
         if (weightsData[i] >= float(0.0)): continue
         weightsData[i] = float(foregroundbackgroundratio) + extraWeights[z * H * W + i]
     
-    idx = 0
-    _weights = np.ones([H,W])
-    _samplepdf = np.ones([H,W])
-    _labels = np.ones([H,W])
     _weights = np.reshape(weightsData, (H,W))
     _labels = np.reshape(labelsData, (H,W))
     _samplepdf = np.reshape(samplePdfData, (H,W))
