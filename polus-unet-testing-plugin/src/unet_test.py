@@ -112,7 +112,7 @@ def unet_segmentation(input_img,img_pixelsize_x,img_pixelsize_y,weightfile_path,
     output_h5 = h5py.File(iofile_path)
     score = output_h5['score'][:]
     output_h5.close()
-    # #get segmentation mask by taking channel argmax
+    #get segmentation mask by taking channel argmax
     segmentation_mask = np.squeeze(np.argmax(score, axis=1))
     return segmentation_mask
 
@@ -145,7 +145,7 @@ def run_segmentation(inpDir, filePattern, pixelsize, weights, weightsfilename, o
         for PATH in fP:
             print(PATH.get("file"))
             tile_grid_size = 1
-            tile_size = tile_grid_size * 1024
+            tile_size = tile_grid_size * 2048
 
             # Set up the BioReader
             with BioReader(PATH.get("file"), backend='python',max_workers=cpu_count()) as br:
