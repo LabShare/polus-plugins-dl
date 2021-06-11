@@ -4,6 +4,8 @@ COPY VERSION /
 
 ARG EXEC_DIR="/opt/executables"
 ARG DATA_DIR="/data"
+ARG HOME=/
+ENV NUMBA_CACHE_DIR=${EXEC_DIR}/numba_cache
 
 RUN pip install --upgrade pip --no-cache-dir
 
@@ -16,15 +18,9 @@ WORKDIR ${EXEC_DIR}
 
 RUN pip3 install -r ${EXEC_DIR}/requirements.txt --no-cache-dir
 
-ARG HOME=/
-
 RUN python -c "import cellpose.models"
 
-RUN mkdir ${EXEC_DIR}/numba_cache && \
-    chmod -R 777 ${EXEC_DIR}/numba_cache && \
-    chmod -R 777 /.cellpose && \
-    ln -s /.cellpose /root/
-
-ENV NUMBA_CACHE_DIR=${EXEC_DIR}/numba_cache
+RUN chmod -R 777 ${EXEC_DIR}/numba_cache && \
+    chmod -R 777 /.cellpose
 
 ENTRYPOINT ["python3", "main.py"]

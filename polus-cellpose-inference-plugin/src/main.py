@@ -3,6 +3,7 @@ import argparse, logging, typing
 from concurrent.futures import wait, ProcessPoolExecutor, ThreadPoolExecutor
 from multiprocessing import Queue
 from pathlib import Path
+import os
 
 # third party libraries
 import numpy as np
@@ -23,11 +24,15 @@ TILE_OVERLAP = 64 # The expected object diameter should be 30 at most
 # Use a gpu if it's available
 USE_GPU = torch.cuda.is_available()
 if USE_GPU:
-    DEV = Queue(2*torch.cuda.device_count())
+    devs = []
     for dev in range(torch.cuda.device_count()):
-        replicates = int(torch.cuda.get_device_properties(0).total_memory/(3.6*10**9))
+        replicates = min([int(torch.cuda.get_device_properties(0).total_memory/(3.6*10**9)),2])
         for _ in range(replicates):
-            DEV.put(torch.device(f"cuda:{dev}"))
+            devs.append(torch.device(f"cuda:{dev}"))
+    
+    DEV = Queue(len(devs))
+    for d in devs:
+        DEV.put(d)
 else:
     DEV = Queue(1)
     DEV.put(torch.device("cpu"))
