@@ -1,13 +1,13 @@
 # core libraries
 import argparse, logging, typing
-from concurrent.futures import wait, ProcessPoolExecutor
+from concurrent.futures import wait, ProcessPoolExecutor, ThreadPoolExecutor
 from multiprocessing import Queue
 from pathlib import Path
 
 # third party libraries
 import numpy as np
 import zarr
-from bfio import BioReader
+from bfio import BioReader, BioWriter
 import cellpose
 import cellpose.models as models
 import torch
@@ -23,9 +23,11 @@ TILE_OVERLAP = 64 # The expected object diameter should be 30 at most
 # Use a gpu if it's available
 USE_GPU = torch.cuda.is_available()
 if USE_GPU:
-    DEV = Queue(torch.cuda.device_count())
+    DEV = Queue(2*torch.cuda.device_count())
     for dev in range(torch.cuda.device_count()):
-        DEV.put(torch.device(f"cuda:{dev}"))
+        replicates = int(torch.cuda.get_device_properties(0).total_memory/(3.6*10**9))
+        for _ in range(replicates):
+            DEV.put(torch.device(f"cuda:{dev}"))
 else:
     DEV = Queue(1)
     DEV.put(torch.device("cpu"))
@@ -86,6 +88,22 @@ def initialize_model(dev: Queue,
                                         device=dev.get())
     
     model_cp.batch_size = 8
+    
+def estimate_diameter(input_path: Path):
+    
+    with BioReader(input_path) as br:
+        
+        x_min = max([br.X//2 - 1024,0])
+        x_max = min([x_min+2048,br.X])
+        y_min = max([br.Y//2 - 1024,0])
+        y_max = min([y_min+2048,br.Y])
+        
+        tile_img = br[y_min:y_max,x_min:x_max,0,0,0]
+        
+        diameter,_ = model_sz.eval(tile_img,
+                                   channels=[0,0])
+    
+    return diameter
 
 def segment_thread(input_path: Path,
                    zfile: Path,
@@ -105,7 +123,8 @@ def segment_thread(input_path: Path,
 
     x,y,z = position
     
-    root = zarr.open(str(zfile))
+    # root = zarr.open(str(zfile))
+    root = zarr.open(str(zfile))[0]
     
     with BioReader(input_path) as br:
         x_min = max([0, x - TILE_OVERLAP])
@@ -135,13 +154,13 @@ def segment_thread(input_path: Path,
         prob = prob[...,np.newaxis,np.newaxis,np.newaxis]
         dP = dP[...,np.newaxis,np.newaxis]
         
-        dP = dP.transpose((1, 2, 3, 0, 4))
-        root[input_path.name]['vector'][y_min:y_max, x_min:x_max, z:z + 1, 0:1, 0:1] = prob[y_overlap:y_max - y_min + y_overlap,
-                                                                                            x_overlap:x_max - x_min + x_overlap,
-                                                                                            ...]
-        root[input_path.name]['vector'][y_min:y_max, x_min:x_max, z:z + 1, 1:3, 0:1] = dP[y_overlap:y_max - y_min + y_overlap,
-                                                                                          x_overlap:x_max - x_min + x_overlap,
-                                                                                          ...]
+        root[0:1,0:1,z:z + 1,y_min:y_max, x_min:x_max] = prob[y_overlap:y_max - y_min + y_overlap,
+                                                               x_overlap:x_max - x_min + x_overlap,
+                                                               ...].transpose(4,3,2,0,1)
+        root[0:1,1:3,z:z + 1,y_min:y_max,x_min:x_max] = dP[:,
+                                                           y_overlap:y_max - y_min + y_overlap,
+                                                           x_overlap:x_max - x_min + x_overlap,
+                                                           ...].transpose(4,0,3,1,2)
         
     return True
 
@@ -177,39 +196,38 @@ def main(inpDir: Path,
         
     elif diameterMode=='EveryImage':
         diameter = 0
-
-    root = zarr.group(store=str(Path(outDir).joinpath('flow.zarr')))
-    
-    # Initialize the process pool
-    executor = ProcessPoolExecutor(DEV.qsize(),
-                                   initializer=initialize_model,
-                                   initargs=(DEV,pretrained_model))
     
     logger.info(f'Running {DEV.qsize()} workers')
     
+    # Initialize the process pool
+    if DEV.qsize() == 1:
+        initialize_model(DEV,pretrained_model)
+        executor = ThreadPoolExecutor(1)
+    else:
+        executor = ProcessPoolExecutor(DEV.qsize(),
+                                       initializer=initialize_model,
+                                       initargs=(DEV,pretrained_model))
+    
     if diameterMode == 'FirstImage':
         
-        with BioReader(inpDir_files[0]) as br:
-            
-            x_min = max([br.X//2 - 1024,0])
-            x_max = min([x_min+2048,br.X])
-            y_min = max([br.Y//2 - 1024,0])
-            y_max = min([y_min+2048,br.Y])
-            
-            tile_img = br[y_min:y_max,x_min:x_max,...]
-            
-            d = DEV.get()
-            model = models.Cellpose(model_type=pretrained_model,
-                                    gpu=USE_GPU,
-                                    device=d)
-            diameter,_ = model.sz.eval(tile_img,
-                                       channels=[0,0])
-            DEV.put(d)
-    
+        logger.info('Estimating diameter from the first image...')
+        
+        process = executor.submit(estimate_diameter,inpDir_files[0])
+        
+        diameter = process.result()
+        
     # Loop through files in inpDir image collection and process
     processes = []
     for f in inpDir_files:
         br = BioReader(f.absolute())
+        out_file = Path(outDir).joinpath(f.name.replace('.ome','_flow.ome').replace('.tif','.zarr')).absolute()
+        bw = BioWriter(out_file,metadata=br.metadata)
+        bw.C = 4
+        bw.dtype = np.float32
+        bw.channel_names = ['cell_probability','x','y','labels']
+        
+        bw._backend._init_writer()
+        
         logger.debug(f'Processing image {f}, diameter = {diameter:.2f}')
         
         # If diameterMode == PixelSize, estimate diameter from pixel size
@@ -234,14 +252,6 @@ def main(inpDir: Path,
             except Exception as err:
                 logger.error('Manual diameter selected, but not diameter supplied and model has no default diameter.')
                 raise err
-
-        # Saving pixel locations and probablity as zarr datasets and metadata as string
-        cluster = root.create_group(f.name)
-        init_cluster_1 = cluster.create_dataset('vector', shape=(br.Y, br.X, br.Z, 3, 1),
-                                                chunks=(TILE_SIZE, TILE_SIZE, 1, 3, 1),
-                                                dtype=np.float32)
-        
-        cluster.attrs['metadata'] = str(br.metadata)
         
         # Iterating through z slices
         for z in range(br.Z):
@@ -253,11 +263,12 @@ def main(inpDir: Path,
                     position = (x,y,z)
                     processes.append(executor.submit(segment_thread,
                                                      f,
-                                                     Path(outDir).joinpath('flow.zarr'),
+                                                     out_file,
                                                      position,
                                                      diameter))
                     
         # Close the image
+        bw.close()
         br.close()
                     
     done, not_done = wait(processes, 0)

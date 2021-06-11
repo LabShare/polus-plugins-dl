@@ -8,7 +8,7 @@ inpDir=/data/input
 diameter=0
 diameterMode=FirstImage
 pretrainedModel=nuclei
-filePattern="r0{y}c0{x}f(001-121)p(01-60)-ch1sk1fk1fl1.ome.tif"
+filePattern="r01c01f_001-121_p_01-60_-ch1sk1fk1fl1.ome.tif"
 
 # Output paths
 outDir=/data/output
