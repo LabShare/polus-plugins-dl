@@ -162,7 +162,7 @@ def run_segmentation(inpDir, filePattern, pixelsize, weights, weightsfilename, o
                     if img_pixelsize_x is None and br.ps_x[0] is not None:
                         img_pixelsize_x = br.ps_x[0] * UNITS[br.ps_x[1]]
                         img_pixelsize_y = br.ps_y[0] * UNITS[br.ps_y[1]]
-                    else:
+                    elif img_pixelsize_x is None:
                         # Set to the model resolution so no resizing occurs
                         img_pixelsize_x = modelresolution_x
                         img_pixelsize_y = modelresolution_y
