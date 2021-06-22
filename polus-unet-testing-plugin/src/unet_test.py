@@ -144,10 +144,6 @@ def run_segmentation(inpDir, filePattern, pixelsize, weights, weightsfilename, o
     rootdir = Path(inpDir)   
     fp = filepattern.FilePattern(rootdir,filePattern)
     
-    modelfile_h5 = h5py.File(modelfile_path,'r')
-    modelresolution_y = modelfile_h5['unet_param/element_size_um'][0]
-    modelresolution_x = modelfile_h5['unet_param/element_size_um'][1]
-    modelfile_h5.close()  
 
     """ Convert the tif to tiled tiff """
     i = 0
