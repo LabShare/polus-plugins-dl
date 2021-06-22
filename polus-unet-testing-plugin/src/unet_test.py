@@ -11,6 +11,20 @@ from multiprocessing import cpu_count
 import json
 import filepattern
 
+UNITS = {'m':  10**6,
+         'cm': 10**4,
+         'mm': 10**3,
+         'µm': 1,
+         'nm': 10**-3,
+         'pm': 10**-6}
+
+modelfile_path = "2d_cell_net_v0-cytoplasm.modeldef.h5"
+#get model resolution (element size) from modelfile
+modelfile_h5 = h5py.File(modelfile_path,'r')
+modelresolution_y = modelfile_h5['unet_param/element_size_um'][0]
+modelresolution_x = modelfile_h5['unet_param/element_size_um'][1]
+modelfile_h5.close()    
+
 def rescale(size,img,mode='uint8'):
     """Rescales the normalized image.
 
@@ -77,15 +91,9 @@ def unet_segmentation(input_img,img_pixelsize_x,img_pixelsize_y,weightfile_path,
     n_iterations=0
     tiling_x=4
     tiling_y=4
-    modelfile_path = "2d_cell_net_v0-cytoplasm.modeldef.h5"
+
     ## prepare image rescaling
     np.set_printoptions(threshold=sys.maxsize)
-
-    #get model resolution (element size) from modelfile
-    modelfile_h5 = h5py.File(modelfile_path,'r')
-    modelresolution_y = modelfile_h5['unet_param/element_size_um'][0]
-    modelresolution_x = modelfile_h5['unet_param/element_size_um'][1]
-    modelfile_h5.close()       
     #get input image absolute size
     abs_size_x = input_img.shape[1] * img_pixelsize_x
     abs_size_y = input_img.shape[0] * img_pixelsize_y
@@ -94,7 +102,6 @@ def unet_segmentation(input_img,img_pixelsize_x,img_pixelsize_y,weightfile_path,
     rescaled_size_px_y = int(np.round(abs_size_y / modelresolution_y))
     rescale_size = (rescaled_size_px_x,rescaled_size_px_y)
     ### preprocess image and store in IO file
-
     #normalize image, then rescale
     normalized_img = normalize(input_img)
     rescaled_img = np.float32(rescale(rescale_size,normalized_img,mode='float32'))
@@ -130,14 +137,17 @@ def run_segmentation(inpDir, filePattern, pixelsize, weights, weightsfilename, o
         weightsfilename: weights file name.
         outDir: output directory to save masks.
     """
-
-    img_pixelsize_x = int(pixelsize)                 
-    img_pixelsize_y = int(pixelsize)
+    img_pixelsize_x = img_pixelsize_y = None if pixelsize is None else int(pixelsize)
     weightfile_path = str(Path(weights)/weightsfilename)
     iofile_path = "output.h5"
     out_path = Path(outDir)
     rootdir = Path(inpDir)   
     fp = filepattern.FilePattern(rootdir,filePattern)
+    
+    modelfile_h5 = h5py.File(modelfile_path,'r')
+    modelresolution_y = modelfile_h5['unet_param/element_size_um'][0]
+    modelresolution_x = modelfile_h5['unet_param/element_size_um'][1]
+    modelfile_h5.close()  
 
     """ Convert the tif to tiled tiff """
     i = 0
@@ -148,9 +158,18 @@ def run_segmentation(inpDir, filePattern, pixelsize, weights, weightsfilename, o
             tile_size = tile_grid_size * 2048
 
             # Set up the BioReader
-            with BioReader(PATH.get("file"), backend='python',max_workers=cpu_count()) as br:
+            with BioReader(PATH.get("file")) as br:
 
                 with BioWriter(out_path.joinpath(PATH.get("file").name),metadata = br.metadata, backend='python') as bw:
+                    
+                    # Set pixel size based on metadata from each image if it exists
+                    if img_pixelsize_x is None and br.ps_x[0] is not None:
+                        img_pixelsize_x = br.ps_x[0] * UNITS[br.ps_x[1]]
+                        img_pixelsize_y = br.ps_y[0] * UNITS[br.ps_y[1]]
+                    else:
+                        # Set to the model resolution so no resizing occurs
+                        img_pixelsize_x = modelresolution_x
+                        img_pixelsize_y = modelresolution_y
 
                         # Loop through z-slices
                     for z in range(br.Z):

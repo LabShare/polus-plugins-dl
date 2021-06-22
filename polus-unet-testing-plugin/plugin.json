@@ -1,6 +1,6 @@
 {
     "name": "UNet Testing",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "title": "UNet Testing",
     "description": "WIPP plugin to test UNet model from UFreiburg",
     "author": "Vishakha Goyal (vishakha.goyal@nih.gov)",
@@ -8,7 +8,7 @@
     "repository": "https://github.com/labshare/polus-plugins",
     "website": "https://ncats.nih.gov/preclinical/core/informatics",
     "citation": "U-Net – Deep Learning for Cell Counting, Detection, and Morphometry. https://doi.org/10.1038/s41592-018-0261-2",
-    "containerId": "labshare/polus-unet-testing-plugin:0.1.3",
+    "containerId": "labshare/polus-unet-testing-plugin:0.1.4",
     "inputs": [
       {
         "name": "weightsfilename",
@@ -31,8 +31,8 @@
       {
         "name": "pixelsize",
         "type": "number",
-        "description": "Input image pixel size.",
-        "required": true
+        "description": "Input image pixel size in micrometers.",
+        "required": false
       },
       {
         "name": "weights",
@@ -67,7 +67,7 @@
       {
         "key": "inputs.pixelsize",
         "title": "Pixel Size",
-        "description": "Input image pixel size."
+        "description": "Input image pixel size in micrometers."
       },
       {
         "key": "inputs.weights",

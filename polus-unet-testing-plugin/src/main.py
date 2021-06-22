@@ -21,7 +21,7 @@ if __name__=="__main__":
     parser.add_argument('--filePattern', dest='filePattern', type=str,
                         help='Filename pattern to filter data.', required=True)
     parser.add_argument('--pixelsize', dest='pixelsize', type=str,
-                        help='Input image pixel size.', required=True)
+                        help='Input image pixel size in micrometers.', required=False)
     parser.add_argument('--weights', dest='weights', type=str,
                         help='Weights file path for testing.', required=True)
     # Output arguments
