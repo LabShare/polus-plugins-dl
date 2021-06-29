@@ -1,0 +1,133 @@
+{
+    "name": "UNet Training",
+    "version": "0.2.3",
+    "title": "UNet Training",
+    "description": "WIPP plugin to train UNet model from UFreiburg",
+    "author": "Vishakha Goyal (vishakha.goyal@nih.gov)",
+    "institution": "National Center for Advancing Translational Sciences, National Institutes of Health",
+    "repository": "https://github.com/labshare/polus-plugins",
+    "website": "https://ncats.nih.gov/preclinical/core/informatics",
+    "citation": "U-Net – Deep Learning for Cell Counting, Detection, and Morphometry. https://doi.org/10.1038/s41592-018-0261-2",
+    "containerId": "labshare/polus-unet-training-plugin:0.2.3",
+    "inputs": [
+      {
+        "name": "borderWeightFactor",
+        "type": "number",
+        "description": "lambda separation",
+        "required": false
+      },
+      {
+        "name": "borderWeightSigmaPx",
+        "type": "number",
+        "description": "Sigma for balancing weight function.",
+        "required": false
+      },
+      {
+        "name": "foregroundbackgroundgratio",
+        "type": "number",
+        "description": "Foreground/Background ratio",
+        "required": false
+      },
+      {
+        "name": "pixelsize",
+        "type": "number",
+        "description": "Input image pixel size in micrometers.",
+        "required": false
+      },
+      {
+        "name": "iterations",
+        "type": "number",
+        "description": "Number of training iterations",
+        "required": false
+      },
+      {
+        "name": "sigma1Px",
+        "type": "number",
+        "description": "Sigma for instance segmentation.",
+        "required": false
+      },
+      {
+        "name": "testingImages",
+        "type": "collection",
+        "description": "Input testing image collection to be processed by this plugin",
+        "required": true
+      },
+      {
+        "name": "trainingImages",
+        "type": "collection",
+        "description": "Input training image collection to be processed by this plugin",
+        "required": true
+      },
+      {
+        "name": "testingLabels",
+        "type": "collection",
+        "description": "Input testing label collection to be processed by this plugin",
+        "required": true
+      },
+      {
+        "name": "trainingLabels",
+        "type": "collection",
+        "description": "Input training label collection to be processed by this plugin",
+        "required": true
+      }
+    ],
+    "outputs": [
+      {
+        "name": "outDir",
+        "type": "genericData",
+        "description": "Output collection"
+      }
+    ],
+    "ui": [
+      {
+        "key": "inputs.borderWeightFactor",
+        "title": "borderWeightFactor",
+        "description": "lambda separation"
+      },
+      {
+        "key": "inputs.borderWeightSigmaPx",
+        "title": "borderWeightSigmaPx",
+        "description": "Sigma for balancing weight function."
+      },
+      {
+        "key": "inputs.foregroundbackgroundgratio",
+        "title": "foregroundbackgroundgratio",
+        "description": "Foreground/Background ratio"
+      },
+      {
+        "key": "inputs.pixelsize",
+        "title": "Pixel Size",
+        "description": "Input image pixel size in micrometers."
+      },
+      {
+        "key": "inputs.iterations",
+        "title": "training iterations",
+        "description": "Number of training iterations."
+      },
+      {
+        "key": "inputs.sigma1Px",
+        "title": "sigma1Px",
+        "description": "Sigma for instance segmentation."
+      },
+      {
+        "key": "inputs.testingImages",
+        "title": "testingImages",
+        "description": "Input testing image collection to be processed by this plugin"
+      },
+      {
+        "key": "inputs.trainingImages",
+        "title": "trainingImages",
+        "description": "Input training image collection to be processed by this plugin"
+      },
+      {
+        "key": "inputs.testingLabels",
+        "title": "testingLabels",
+        "description": "Input testing label collection to be processed by this plugin"
+      },
+      {
+        "key": "inputs.trainingLabels",
+        "title": "trainingLabels",
+        "description": "Input training label collection to be processed by this plugin"
+      }
+    ]
+  }

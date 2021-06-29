@@ -1,0 +1,15 @@
+test_iter: 294
+test_interval: 10
+base_lr: 1.0E-4
+display: 1
+max_iter: 100
+lr_policy: "fixed"
+momentum: 0.9
+snapshot: 100
+snapshot_prefix: "snapshot"
+solver_mode: CPU
+debug_info: false
+net: "model.prototxt"
+snapshot_format: HDF5
+momentum2: 0.999
+type: "Adam"
