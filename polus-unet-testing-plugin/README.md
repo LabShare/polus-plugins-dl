@@ -24,7 +24,7 @@ This plugin takes five input arguments and one output argument:
 | `--weightsfilename` | Weights file for testing. | Input | string |
 | `--inpDir` | Input image collection to be processed by this plugin. | Input | collection |
 | `--filePattern` | File name pattern to filter data. | Input | string |
-| `--pixelsize` | Input image pixel size (in µm). | Input | number |
+| `--pixelsize` | Input image pixel size (in µm). If pixel size is not provided, it will be read from image metadata. If no metadata is available, model resolution will be used as pixel size. | Input | number |
 | `--weights` | Weights path for testing. | Input | generic data collection |
 | `--outDir` | Output collection | Output | collection |
 

@@ -1,11 +1,10 @@
 import h5py
 import numpy as np
 import PIL
-import subprocess
 import os
 from PIL import Image
 import sys
-from bfio import BioReader, BioWriter, LOG4J, JARS
+from bfio import BioReader, BioWriter
 from pathlib import Path
 from multiprocessing import cpu_count
 import json
@@ -48,7 +47,7 @@ def rescale(size,img,mode='uint8'):
     else:
         raise(Exception('Invalid rescaling mode. Use uint8 or float32'))
           
-    return np.array(img_PIL.resize(size,PIL.Image.BILINEAR))
+    return np.array(img_PIL.resize(size,PIL.Image.NEAREST))
 
 
 def normalize(img):
@@ -74,7 +73,8 @@ def unet_segmentation(input_img,img_pixelsize_x,img_pixelsize_y,weightfile_path,
                           cleanup=True):
     """Run unet segmentation.
 
-    Preprocess image and run unet segmentation using caffe binary.
+    Preprocess image and run unet segmentation using caffe binary. 
+    If rescale factor is greater than 10, the code will throw an error.
 
     Args:
         input_img: input image to be segmented.
@@ -95,11 +95,21 @@ def unet_segmentation(input_img,img_pixelsize_x,img_pixelsize_y,weightfile_path,
     ## prepare image rescaling
     np.set_printoptions(threshold=sys.maxsize)
     #get input image absolute size
-    abs_size_x = input_img.shape[1] * img_pixelsize_x
-    abs_size_y = input_img.shape[0] * img_pixelsize_y
-    #get rescaled image size in pixel
-    rescaled_size_px_x = int(np.round(abs_size_x / modelresolution_x))
-    rescaled_size_px_y = int(np.round(abs_size_y / modelresolution_y))
+    abs_size_x = input_img.shape[1]
+    abs_size_y = input_img.shape[0]
+    rescale_factor_x = img_pixelsize_x / modelresolution_x
+    rescale_factor_y = img_pixelsize_y / modelresolution_y
+
+    if rescale_factor_x < 10 and rescale_factor_y < 10:
+        rescaled_size_px_x = int(np.round(abs_size_x*rescale_factor_x))
+        rescaled_size_px_y = int(np.round(abs_size_y*rescale_factor_y))
+    else:
+        raise Exception('rescale factor greater than 10.')
+
+    if rescale_factor_x > 1 or rescale_factor_y > 1:
+        tiling_x=3*rescale_factor_x
+        tiling_y=3*rescale_factor_y
+
     rescale_size = (rescaled_size_px_x,rescaled_size_px_y)
     ### preprocess image and store in IO file
     #normalize image, then rescale
@@ -127,7 +137,9 @@ def unet_segmentation(input_img,img_pixelsize_x,img_pixelsize_y,weightfile_path,
 def run_segmentation(inpDir, filePattern, pixelsize, weights, weightsfilename, outDir):
     """Save segmentation mask using Biowriter.
 
-    Read input image, call segmentation function and save output mask using Biowriter.
+    Read input image, call segmentation function and save output mask using Biowriter. 
+    If pixel size is not provided, it will be read from image metadata.
+    If no metadata is available, model resolution will be used as pixel size.
 
     Args:
         inpDir: input image directory.
@@ -137,7 +149,7 @@ def run_segmentation(inpDir, filePattern, pixelsize, weights, weightsfilename, o
         weightsfilename: weights file name.
         outDir: output directory to save masks.
     """
-    img_pixelsize_x = img_pixelsize_y = None if pixelsize is None else int(pixelsize)
+    img_pixelsize_x = img_pixelsize_y = None if pixelsize is None else float(pixelsize)
     weightfile_path = str(Path(weights)/weightsfilename)
     iofile_path = "output.h5"
     out_path = Path(outDir)
@@ -146,7 +158,6 @@ def run_segmentation(inpDir, filePattern, pixelsize, weights, weightsfilename, o
     
 
     """ Convert the tif to tiled tiff """
-    i = 0
     for fP in fp():
         for PATH in fP:
             print(PATH.get("file"))
@@ -169,18 +180,16 @@ def run_segmentation(inpDir, filePattern, pixelsize, weights, weightsfilename, o
 
                         # Loop through z-slices
                     for z in range(br.Z):
-
                         # Loop across the length of the image
                         for y in range(0,br.Y,tile_size):
                             y_max = min([br.Y,y+tile_size])
-
                             # Loop across the depth of the image
                             for x in range(0,br.X,tile_size):
                                 x_max = min([br.X,x+tile_size])
-
                                 input_img = np.squeeze(br[y:y_max,x:x_max,z:z+1,0,0])
                                 img = unet_segmentation(input_img,img_pixelsize_x, img_pixelsize_y,weightfile_path,iofile_path)
+                                rescale_size_output = (input_img.shape[1], input_img.shape[0])
+                                img = rescale(rescale_size_output,img,mode='float32')
                                 bw.dtype = np.uint8
                                 bw[y:y_max, x:x_max, z:z+1, 0, 0] = img.astype(np.uint8)
                                 os.remove("output.h5")
-                i+=1
