@@ -1,0 +1,72 @@
+{
+    "name": "SMP Inference Binary",
+    "version": "0.1.3Debug4",
+    "title": "SMP Inference",
+    "description": "Segmentation models inference plugin",
+    "author": "Gauhar Bains (gauhar.bains@labshare.org)",
+    "institution": "National Center for Advancing Translational Sciences, National Institutes of Health",
+    "repository": "https://github.com/labshare/polus-plugins",
+    "website": "https://ncats.nih.gov/preclinical/core/informatics",
+    "citation": "",
+    "containerId": "labshare/polus-smp-inference-plugin:0.1.3Debug4",
+    "inputs": [
+      {
+        "name": "pattern",
+        "type": "string",
+        "description": "Filename pattern used to separate data",
+        "required": true
+      },
+      {
+        "name": "inpDir",
+        "type": "collection",
+        "description": "Input image collection to be processed by this plugin",
+        "required": true
+      },
+      {
+        "name": "segmentationType",
+        "type": "enum",
+        "options": {
+          "values": [
+              "Binary"
+          ]
+      },
+        "description": "Type of segmentation",
+        "required": true
+      },
+      {
+        "name": "modelPath",
+        "type": "genericData",
+        "description": "Pretrained model path",
+        "required": true
+      }
+    ],
+    "outputs": [
+      {
+        "name": "outDir",
+        "type": "collection",
+        "description": "Output collection"
+      }
+    ],
+    "ui": [
+      {
+        "key": "inputs.segmentationType",
+        "title": "Segmentation Type",
+        "description": "Segmentation Type"
+      },
+      {
+        "key": "inputs.pattern",
+        "title": "Filename pattern",
+        "description": "Filename pattern used to separate data"
+      },
+      {
+        "key": "inputs.inpDir",
+        "title": "Input collection",
+        "description": "Input image collection to be processed by this plugin"
+      },
+      {
+        "key": "inputs.modelPath",
+        "title": "Pre-Trained Model",
+        "description": "Pretrained model to use"
+      }
+    ]
+  }
